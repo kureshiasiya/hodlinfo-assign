@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>HodlInfo</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #191d28;
+        color: #ffffff;
+        margin: 0;
+        padding: 0;
+      }
+      .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 20px;
+        background-color: #191d28;
+      }
+      .logo {
+        font-size: 36px;
+        font-weight: bold;
+        color: #3dc6c1;
+      }
+      .controls {
+        display: flex;
+        align-items: center;
+      }
+      select,
+      button {
+        margin-left: 10px;
+        padding: 5px 10px;
+        background-color: #2e3241;
+        color: #ffffff;
+        border: none;
+        border-radius: 5px;
+      }
+      .main-price {
+        text-align: center;
+        font-size: 80px;
+        margin: 40px 0;
+      }
+      .price-info {
+        text-align: center;
+        font-size: 18px;
+        color: #3dc6c1;
+        margin-bottom: 40px;
+      }
+      .stats {
+        display: flex;
+        justify-content: space-around;
+        margin-bottom: 40px;
+      }
+      .stat {
+        text-align: center;
+      }
+      .stat-value {
+        font-size: 24px;
+        font-weight: bold;
+      }
+      .stat-label {
+        font-size: 14px;
+        color: #3dc6c1;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      th,
+      td {
+        padding: 15px;
+        text-align: left;
+        border-bottom: 1px solid #2e3241;
+      }
+      th {
+        background-color: #2e3241;
+        color: #3dc6c1;
+      }
+      .positive {
+        color: #3dc6c1;
+      }
+      .negative {
+        color: #f44336;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="header">
+      <div class="logo">HODLINFO</div>
+      <div class="controls">
+        <select id="currency">
+          <option>INR</option>
+        </select>
+        <select id="crypto">
+          <option>BTC</option>
+        </select>
+        <button>BUY BTC</button>
+      </div>
+    </div>
+
+    <div class="stats">
+      <div class="stat">
+        <div class="stat-value">0.1 %</div>
+        <div class="stat-label">5 Mins</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value">0.96 %</div>
+        <div class="stat-label">1 Hour</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value">2.73 %</div>
+        <div class="stat-label">1 Day</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value">7.51 %</div>
+        <div class="stat-label">7 Days</div>
+      </div>
+    </div>
+
+    <div class="main-price">₹ <span id="average-price">26,56,110</span></div>
+    <div class="price-info">Average BTC/INR net price including commission</div>
+
+    <table id="crypto-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Platform</th>
+          <th>Last Traded Price</th>
+          <th>Buy / Sell Price</th>
+          <th>Difference</th>
+          <th>Savings</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Data will be inserted here dynamically -->
+      </tbody>
+    </table>
+
+    <script>
+      function fetchData() {
+        fetch("/api/tickers")
+          .then((response) => response.json())
+          .then((data) => {
+            console.log("Data received from API:", data); // Logging the data received
+            const tableBody = document.querySelector("#crypto-table tbody");
+            tableBody.innerHTML = "";
+            data.forEach((item, index) => {
+              const difference = (
+                ((item.buy - item.sell) / item.sell) *
+                100
+              ).toFixed(2);
+              const savings = (item.buy - item.sell).toFixed(2);
+              const row = tableBody.insertRow();
+              row.innerHTML = `
+                <td>${index + 1}</td>
+                <td>${item.name}</td>
+                <td>₹ ${parseFloat(item.last).toLocaleString("en-IN")}</td>
+                <td>₹ ${parseFloat(item.buy).toLocaleString(
+                  "en-IN"
+                )} / ₹ ${parseFloat(item.sell).toLocaleString("en-IN")}</td>
+                <td class="${
+                  difference > 0 ? "positive" : "negative"
+                }">${difference}%</td>
+                <td class="${
+                  savings > 0 ? "positive" : "negative"
+                }">₹ ${Math.abs(savings).toLocaleString("en-IN")}</td>
+              `;
+            });
+          })
+          .catch((error) => console.error("Error fetching data:", error));
+      }
+
+      fetchData();
+      setInterval(fetchData, 60000); // Refresh data every minute
+    </script>
+  </body>
+</html>
